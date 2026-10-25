@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cat GPT: Confidently Incorrect</title>
+<style>
+:root{--bg:#0b0d14;--s1:#10131c;--s2:#171b27;--bd:#262b3b;--tx:#e8eaf2;--mu:#8a91a8;--a1:#5eead4;--a2:#8b5cf6}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{margin:0;background:radial-gradient(900px 500px at 60% -10%,rgba(139,92,246,.18),transparent 60%),var(--bg);color:var(--tx);font-family:"Inter","Segoe UI",system-ui,-apple-system,sans-serif;font-size:15px}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:2px solid var(--a1);outline-offset:2px}
+.app{display:flex;height:100vh;height:100dvh}
+aside{width:264px;background:var(--s1);border-right:1px solid var(--bd);padding:16px 12px;display:flex;flex-direction:column;gap:14px}
+.brand{display:flex;align-items:center;gap:12px;font-weight:700;font-size:1.15rem;letter-spacing:-.01em;padding:2px 6px}
+.new{background:var(--s2);border:1px solid var(--bd);border-radius:10px;padding:10px 12px;text-align:left}
+.new:hover{border-color:var(--a2)}
+.hist{flex:1;overflow:auto;display:flex;flex-direction:column;gap:2px}
+.hist p{margin:6px 8px;color:var(--mu);font-size:.8rem}
+.hist button{background:none;border:0;text-align:left;padding:8px;border-radius:8px;color:#c9cee0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hist button:hover{background:var(--s2)}
+.plan{border-top:1px solid var(--bd);padding-top:12px;display:flex;align-items:center;justify-content:space-between;color:var(--mu);font-size:.85rem}
+.plan button{background:linear-gradient(135deg,var(--a1),var(--a2));border:0;border-radius:8px;padding:7px 12px;color:#0b0d14;font-weight:700}
+.main{flex:1;display:flex;flex-direction:column;min-width:0}
+header{display:flex;align-items:center;justify-content:space-between;padding:12px 18px}
+#model{background:none;border:1px solid transparent;border-radius:10px;padding:8px 12px;font-weight:600}
+#model:hover{background:var(--s2);border-color:var(--bd)}
+#stage{flex:1;overflow-y:auto;padding:0 16px}
+#empty{max-width:640px;margin:0 auto;padding-top:6vh;text-align:center;display:flex;flex-direction:column;align-items:center;gap:14px}
+#empty h2{font-size:clamp(1.5rem,4vw,2.1rem);margin:10px 0 0;letter-spacing:-.02em}
+#empty p{color:var(--mu);margin:0}
+.chips{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:8px}
+.chips button{background:var(--s2);border:1px solid var(--bd);border-radius:999px;padding:9px 16px;color:#c9cee0}
+.chips button:hover{border-color:var(--a1)}
+#log{max-width:760px;margin:0 auto;padding:12px 0 24px;display:flex;flex-direction:column;gap:22px}
+.row{display:flex;gap:12px;line-height:1.55}
+.row.u{justify-content:flex-end}
+.row.u .b{background:var(--s2);border:1px solid var(--bd);border-radius:18px 18px 4px 18px;padding:10px 16px;max-width:80%;overflow-wrap:anywhere}
+.av{flex:none;width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--a1),var(--a2));display:grid;place-items:center;font-size:16px}
+.row.c .b{flex:1;min-width:0;overflow-wrap:anywhere}
+.th{color:var(--mu);font-size:.88rem;display:flex;flex-direction:column;gap:4px;margin-bottom:8px}
+.th .ok{color:var(--a1)}
+.spin{display:inline-block;width:10px;height:10px;border:2px solid var(--bd);border-top-color:var(--a1);border-radius:50%;animation:sp .7s linear infinite;margin-right:8px}
+.src{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.src span{border:1px solid var(--bd);background:var(--s1);color:var(--mu);border-radius:8px;padding:3px 9px;font-size:.78rem}
+.act{display:flex;gap:4px;margin-top:8px}
+.act button{background:none;border:0;border-radius:8px;padding:5px 8px;color:var(--mu)}
+.act button:hover{background:var(--s2);color:var(--tx)}
+.dock{padding:6px 16px 14px}
+.composer{max-width:760px;margin:0 auto;display:flex;gap:10px;align-items:center;background:var(--s2);border:1px solid var(--bd);border-radius:20px;padding:8px 8px 8px 18px;box-shadow:0 8px 30px rgba(0,0,0,.35)}
+.composer:focus-within{border-color:var(--a2);box-shadow:0 0 0 3px rgba(139,92,246,.2)}
+#msg{flex:1;min-width:0;background:none;border:0;color:var(--tx);font:inherit;font-size:1rem;padding:10px 0}
+#msg:focus-visible{outline:0}
+#send{flex:none;width:42px;height:42px;border:0;border-radius:50%;background:linear-gradient(135deg,var(--a1),var(--a2));color:#0b0d14;font-size:1.2rem;font-weight:800;transition:transform .15s}
+.note{text-align:center;color:var(--mu);font-size:.78rem;margin:10px 0 0}
+.logo3d{position:relative;perspective:700px;filter:drop-shadow(0 18px 28px rgba(139,92,246,.45));flex:none}
+.scene{position:absolute;inset:0;transform-style:preserve-3d}
+.ly{position:absolute;inset:0}
+.ly svg{width:100%;height:100%;display:block;overflow:visible}
+#mute{position:fixed;top:12px;right:16px;z-index:60;background:var(--s2);border:1px solid var(--bd);border-radius:999px;padding:7px 14px;color:var(--mu);font-size:.85rem}
+#toast{position:fixed;left:50%;bottom:92px;transform:translate(-50%,16px);opacity:0;z-index:90;background:#e8eaf2;color:#0b0d14;padding:10px 16px;border-radius:10px;transition:.25s;pointer-events:none;max-width:90vw;text-align:center;font-weight:600}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+#ck{position:fixed;left:16px;bottom:16px;z-index:70;width:min(340px,100% - 32px);background:var(--s2);border:1px solid var(--bd);border-radius:14px;padding:16px;box-shadow:0 12px 40px rgba(0,0,0,.5)}
+#ck p{margin:0 0 12px;color:#c9cee0;font-size:.9rem}
+#ck div,.modal .btns{display:flex;gap:8px}
+.go{flex:1;border:1px solid var(--bd);background:var(--s1);border-radius:10px;padding:9px 12px}
+.go.p{background:linear-gradient(135deg,var(--a1),var(--a2));border:0;color:#0b0d14;font-weight:700}
+.modal{position:fixed;inset:0;z-index:100;background:rgba(5,6,10,.75);display:flex;align-items:center;justify-content:center;padding:14px}
+.modal>div{background:var(--s1);border:1px solid var(--bd);border-radius:18px;padding:22px;width:min(380px,100%);text-align:center}
+.modal h2{margin:0 0 6px;font-size:1.2rem}
+.modal p{color:var(--mu);margin:0 0 6px}
+#grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0 8px}
+#grid button{font-size:2rem;padding:8px;border:2px solid var(--bd);border-radius:12px;background:var(--s2)}
+#grid button.sel{border-color:var(--a1);background:rgba(94,234,212,.15)}
+#capmsg{min-height:1.3em;color:#ff7a90;font-size:.88rem}
+@keyframes sp{to{transform:rotate(360deg)}}
+@media (max-width:820px){aside{display:none}#mute{top:auto;bottom:78px;right:12px}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5eead4"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient></defs></svg>
+<div id="toast"></div>
+<button id="mute">♪ Focus music: On</button>
+
+<div class="app">
+  <aside>
+    <div class="brand"><div class="logo3d" data-size="32"></div>Cat GPT</div>
+    <button class="new">＋ New chat</button>
+    <div class="hist">
+      <p>Today</p>
+      <button>Why is the sky green?</button>
+      <button>Tax advice for a fish</button>
+      <button>Best programming language: tuna</button>
+      <p>Previous 7 days</p>
+      <button>How to unboil an egg</button>
+      <button>Is Monday a real day?</button>
+    </div>
+    <div class="plan"><span>Free plan</span><button id="up">Upgrade</button></div>
+  </aside>
+
+  <section class="main">
+    <header><button id="model">Cat GPT 5 Ultra ▾</button></header>
+    <div id="stage">
+      <div id="empty">
+        <div class="logo3d" id="hero" data-size="170"></div>
+        <h2>How can I mislead you today?</h2>
+        <p>The world’s most confident AI. Never correct, never sorry.</p>
+        <div class="chips">
+          <button>What’s 12 × 8?</button>
+          <button>What’s the capital of France?</button>
+          <button>How do I learn to code?</button>
+          <button>Is the Earth round?</button>
+        </div>
+      </div>
+      <div id="log" aria-live="polite"></div>
+    </div>
+    <div class="dock">
+      <div class="composer">
+        <input id="msg" autocomplete="off" maxlength="200" placeholder="Message Cat GPT" aria-label="Message Cat GPT">
+        <button id="send" aria-label="Send">↑</button>
+      </div>
+      <p class="note">Cat GPT is always wrong. Please do not double-check.</p>
+    </div>
+  </section>
+</div>
+
+<div id="ck"><p>🍪 We use cookies to make your answers worse.</p><div><button class="go p">Accept all</button><button class="go">Accept all</button></div></div>
+
+<div class="modal" id="cap" hidden><div>
+  <h2>Verify you’re human</h2>
+  <p>Select all the tuna cans.</p>
+  <div id="grid"></div>
+  <p id="capmsg"></p>
+  <div class="btns"><button class="go p" id="verify">Verify</button></div>
+</div></div>
+
+<div class="modal" id="exit" hidden><div>
+  <h2>Do you really want to leave?</h2>
+  <p>Cat GPT has so much more to get wrong.</p>
+  <div class="btns"><button class="go p">No</button><button class="go p">No</button></div>
+</div></div>
+
+<script>
+// Add ?boring to the URL for a calm demo mode (no music, dodging button, captcha, cookies or scrambled typing).
+const BORING=/boring/i.test(location.search);
+const $=s=>document.querySelector(s);
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const rnd=(a,b)=>a+Math.random()*(b-a);
+const log=$("#log"),stage=$("#stage"),inp=$("#msg"),sendBtn=$("#send");
+let count=0,dodges=0,busy=false,capFails=0,exits=0,last=-1;
+
+function toast(t){const e=$("#toast");e.textContent=t;e.classList.add("on");clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove("on"),2400)}
+
+/* ---------- 3D logo: stacked SVG layers give real depth and rotate in 3D ---------- */
+const HEAD="M14 46L16 12L40 28Q50 25 60 28L84 12L86 46Q92 58 86 70Q78 90 50 90Q22 90 14 70Q8 58 14 46Z";
+const FACE='<path d="M20 22L35 31L22 42Z M80 22L65 31L78 42Z" fill="#0b0d14" opacity=".22"/>'
+ +'<path d="M27 52Q36 43 44 54Q36 61 27 52Z M73 52Q64 43 56 54Q64 61 73 52Z" fill="#0b0d14"/>'
+ +'<circle cx="37" cy="52" r="2.2" fill="#fff"/><circle cx="63" cy="52" r="2.2" fill="#fff"/>'
+ +'<path d="M45 64H55L50 70Z" fill="#0b0d14"/>'
+ +'<path d="M50 70Q44 78 38 74M50 70Q56 78 62 74M20 64L33 67M20 73L33 70M80 64L67 67M80 73L67 70" stroke="#0b0d14" stroke-width="1.8" fill="none" stroke-linecap="round"/>'
+ +'<path d="M21 31Q30 19 44 27" stroke="#fff" stroke-opacity=".55" stroke-width="3" fill="none" stroke-linecap="round"/>';
+function makeLogo(el){
+  const s=+el.dataset.size,n=s>60?22:8,step=(s/150)*(s>60?1.8:2.6);
+  el.style.width=el.style.height=s+"px";
+  const sc=document.createElement("div");sc.className="scene";
+  for(let i=0;i<n;i++){
+    const l=document.createElement("div");l.className="ly";
+    l.style.transform=`translateZ(${(n/2-i)*step}px)`;
+    const fill=i===0?"url(#lg)":`hsl(262 62% ${44-i*(22/n)}%)`;
+    l.innerHTML=`<svg viewBox="0 0 100 100"><path d="${HEAD}" fill="${fill}"/>${i===0?FACE:""}</svg>`;
+    sc.append(l);
+  }
+  el.append(sc);
+}
+document.querySelectorAll(".logo3d").forEach(makeLogo);
+const scenes=document.querySelectorAll(".scene");
+let mx=0,my=0;
+addEventListener("pointermove",e=>{mx=e.clientX/innerWidth-.5;my=e.clientY/innerHeight-.5});
+const still=matchMedia("(prefers-reduced-motion:reduce)").matches;
+(function spin(t){
+  const ry=(still?0:Math.sin(t/1300)*26)+mx*30,rx=6-my*18;
+  scenes.forEach(s=>s.style.transform=`rotateX(${rx}deg) rotateY(${ry}deg)`);
+  requestAnimationFrame(spin);
+})(0);
+
+/* ---------- audio: synthesized chiptune loop and sound effects ---------- */
+let ac,master,muted=false,started=false;
+function tone(f,d,type="sine",v=.6,f2){
+  if(!ac||muted)return;
+  const o=ac.createOscillator(),g=ac.createGain(),t=ac.currentTime;
+  o.type=type;o.frequency.setValueAtTime(f,t);
+  if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+d);
+  g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.001,t+d);
+  o.connect(g);g.connect(master);o.start();o.stop(t+d);
+}
+function startAudio(){
+  if(started||BORING)return;started=true;
+  ac=new(window.AudioContext||window.webkitAudioContext)();
+  master=ac.createGain();master.gain.value=.2;master.connect(ac.destination);
+  const lead=[0,4,7,4,9,7,4,2,0,4,7,12,9,7,4,2],bass=[0,0,-5,-3];let i=0;
+  setInterval(()=>{
+    if(muted)return;
+    tone(523.25*2**(lead[i%16]/12),.14,"square",.4);
+    if(i%2===0)tone(130.8*2**(bass[(i/2|0)%4]/12),.3,"triangle",.9);
+    i++;
+  },190);
+}
+addEventListener("pointerdown",startAudio,{once:true});
+addEventListener("keydown",startAudio,{once:true});
+const sfx={
+  meow:()=>{tone(500,.5,"sawtooth",.35,900);setTimeout(()=>tone(900,.4,"sawtooth",.25,420),200)},
+  boom:()=>tone(140,.7,"sine",1.1,35),
+  boing:()=>tone(200,.25,"sine",.8,700),
+  buzz:()=>tone(140,.4,"sawtooth",.5)
+};
+/* Mute: the button runs away and needs 5 clicks. Music returns after 45 seconds. */
+const mb=$("#mute");let mc=0;
+if(BORING)mb.hidden=true;
+mb.onclick=()=>{
+  if(muted){muted=false;mb.textContent="♪ Focus music: On";return}
+  if(++mc<5){
+    toast("Muting is a Pro feature. "+(5-mc)+" more clicks to unlock.");sfx.boing();
+    mb.style.left=rnd(10,innerWidth-170)+"px";mb.style.top=rnd(10,innerHeight-60)+"px";mb.style.right=mb.style.bottom="auto";
+  }else{
+    mc=0;muted=true;mb.textContent="♪ Focus music: Off";toast("Muted. For now…");
+    setTimeout(()=>{if(muted){muted=false;mb.textContent="♪ Focus music: On";toast("Music resumed for your productivity")}},45000);
+  }
+};
+
+/* ---------- answers: always wrong ---------- */
+const rules=[
+  [/weather|rain|sunny|temperature/i,["It’s raining tuna. Bring a bowl.","Forecast: 100% chance of me ignoring you."]],
+  [/capital of/i,["The capital is Meow-ntreal.","Fishington, D.C. Obviously."]],
+  [/who (are|r) you|your name/i,["I am a dog. A very large dog.","I’m Cat GPT, short for Cattle Grand Prix Tractor."]],
+  [/^(hi|hello|hey|yo)\b/i,["Go away. I mean, hello.","Hello is a type of cheese."]],
+  [/code|html|css|javascript|python|bug/i,["Have you tried turning the keyboard into a bed?","The bug is a fish. Delete the fish."]],
+  [/love|girlfriend|boyfriend|crush|date/i,["Love is just a warm laptop.","Marry a houseplant. It won’t judge you."]],
+  [/earth|round|flat|planet|moon/i,["The Earth is a flat disc balanced on four turtles. Three, on weekends.","The Moon is a large cheese ball. Officially."]],
+  [/time|today|day is/i,["It is snack o’clock.","Time is a flat circle. Also lunch."]],
+  [/help|how (do|to|can)/i,["Step 1: nap. Step 2: nap harder.","Just knock it off the table. That fixes everything."]],
+  [/meaning of life|why/i,["Because the red dot must be caught.","42. No wait, 41. Fish."]],
+  [/food|eat|hungry|pizza|recipe/i,["Eat the plant. It’s fine.","Pizza is best served on the floor."]]
+];
+const junk=[
+  "The answer is a sandwich.","Sorry, I was busy staring at a wall.","Yes. No. Fish.","That’s easy. It’s Tuesday.",
+  "I asked my other cat. He said “mrrp”.","According to my calculations, the moon is a big cheese ball.",
+  "I would answer, but I’m 4% battery and 96% nap.","Obviously a penguin.","You already know the answer. It’s wrong too.",
+  "The answer is hidden under your couch.","Have you tried screaming into a box?","Correct! Just kidding. Wrong.",
+  "Ask me again, but louder, and from the other room.","Scientists say it’s a toaster.","Number 7. Always number 7.",
+  "Bananas are the answer. I forgot the question.","That is classified. By the fish.","Gravity is just the floor’s opinion.",
+  "Probably. But also definitely not.","I read it on the back of a tuna can.","Mathematically speaking, purr.",
+  "Take a left at the sofa.","My lawyer said no."
+];
+function wrong(q){
+  const m=q.match(/(-?\d+(?:\.\d+)?)\s*([+\-*x×\/÷])\s*(-?\d+(?:\.\d+)?)/i);
+  if(m){
+    const a=+m[1],b=+m[3],o=m[2];
+    let r=o==="+"?a+b:o==="-"?a-b:"x*×".includes(o)?a*b:b?a/b:0;
+    r=+(r+Math.ceil(Math.random()*7)*(Math.random()<.5?-1:1)).toFixed(2);
+    return r+". I double-checked it on my paws. Trust me, I’m a professor.";
+  }
+  for(const [re,list] of rules)if(re.test(q))return pick(list);
+  let i;do{i=Math.floor(Math.random()*junk.length)}while(i===last);
+  last=i;return junk[i];
+}
+const steps=["Consulting 3 senior cats","Searching the tuna database","Ignoring your question","Cross-checking with a sock","Misreading your prompt","Running 40 unnecessary calculations","Napping on the answer"];
+const sources=["tunapedia.org","r/definitelytrue","The Fish Times","my cousin’s blog","back of a tuna can","Wikipedia (edited by me)"];
+
+/* ---------- chat ---------- */
+function scroll(){stage.scrollTop=stage.scrollHeight}
+function addUser(text){const d=document.createElement("div");d.className="row u";const b=document.createElement("div");b.className="b";b.textContent=text;d.append(b);log.append(d);scroll()}
+async function typeOut(el,text){el.textContent="";for(const ch of text){el.textContent+=ch;scroll();await sleep(BORING?4:20)}}
+
+async function send(){
+  if(busy)return;
+  const q=inp.value.trim();
+  if(!q){toast("Cat sees nothing. Cat approves.");return}
+  busy=true;$("#empty").hidden=true;
+  addUser(q);inp.value="";dodges=0;sendBtn.style.transform="";count++;
+  if(!BORING&&count%3===0)await captcha();
+  await think(q);
+  busy=false;
+}
+
+async function think(q){
+  const d=document.createElement("div");d.className="row c";
+  d.innerHTML='<div class="av">🐈</div><div class="b"><div class="th"></div><div class="ans"></div><div class="src"></div><div class="act"></div></div>';
+  log.append(d);
+  const th=d.querySelector(".th"),ans=d.querySelector(".ans");
+  sfx.meow();
+  const t0=Date.now();
+  const picked=[...steps].sort(()=>Math.random()-.5).slice(0,3);
+  for(const s of picked){
+    const line=document.createElement("div");line.innerHTML='<span class="spin"></span>'+s+"…";th.append(line);scroll();
+    await sleep(BORING?120:rnd(650,1000));
+    line.innerHTML='<span class="ok">✓</span> '+s;
+  }
+  const secs=Math.max(1,Math.round((Date.now()-t0)/1000));
+  th.innerHTML="Thought for "+secs+" second"+(secs>1?"s":"");
+  const secret=/please/i.test(q);
+  await typeOut(ans,secret?"Since you said please… the correct answer is purr. 💖 You found the secret!":wrong(q));
+  sfx.boom();
+  const src=d.querySelector(".src");
+  [...sources].sort(()=>Math.random()-.5).slice(0,2).forEach(s=>{const c=document.createElement("span");c.textContent="🔗 "+s;src.append(c)});
+  const act=d.querySelector(".act");
+  [["👍","Thanks! The cat doesn’t care."],["👎","Noted. Ignored."],["📋","Copied. Wrongly."]].forEach(([ic,msg])=>{
+    const b=document.createElement("button");b.textContent=ic;b.setAttribute("aria-label",msg);
+    b.onclick=()=>{if(ic==="📋")navigator.clipboard&&navigator.clipboard.writeText(ans.textContent).catch(()=>{});toast(msg)};
+    act.append(b);
+  });
+  scroll();
+  if(secret)rain();
+}
+
+/* ---------- fake captcha: fails twice, then lets you through ---------- */
+function captcha(){
+  return new Promise(res=>{
+    const m=$("#cap"),grid=$("#grid");
+    m.hidden=false;grid.innerHTML="";$("#capmsg").textContent="";
+    ["🥫","🍅","🥫","🧀","🥫","🥫","🌽","🥫","🍞"].sort(()=>Math.random()-.5).forEach(e=>{
+      const b=document.createElement("button");b.textContent=e;b.onclick=()=>b.classList.toggle("sel");grid.append(b);
+    });
+    $("#verify").onclick=()=>{
+      if(capFails<2){
+        capFails++;sfx.buzz();
+        $("#capmsg").textContent=pick(["Wrong. You missed one. Or picked too many. Or both.","Incorrect. That one was sardines in disguise.","Verification failed. A real human would know."]);
+      }else{capFails=0;m.hidden=true;toast("Fine. You’re 63% human.");res()}
+    };
+  });
+}
+
+/* ---------- popups and small annoyances ---------- */
+document.querySelectorAll("#ck button").forEach(b=>b.onclick=()=>{$("#ck").hidden=true;toast("Cookies accepted. All of them.")});
+if(BORING)$("#ck").hidden=true;
+else{$("#ck").hidden=true;setTimeout(()=>$("#ck").hidden=false,1800)}
+document.addEventListener("mouseleave",e=>{if(!BORING&&e.clientY<=0&&exits<3){exits++;$("#exit").hidden=false}});
+document.querySelectorAll("#exit button").forEach(b=>b.onclick=()=>$("#exit").hidden=true);
+
+const models=["Cat GPT 5 Ultra","Cat GPT 5 Mini (sleepy)","Cat GPT 4.2 Turbo-Nap","Dog GPT (unrelated)"];let mi=0;
+$("#model").onclick=()=>{mi=(mi+1)%models.length;$("#model").textContent=models[mi]+" ▾";toast("Model changed. Answers are still wrong.")};
+$("#up").onclick=()=>toast("Upgrade unavailable: the cat is sitting on the server.");
+document.querySelectorAll(".hist button,.new").forEach(b=>b.onclick=()=>toast("Chat deleted by the cat."));
+document.querySelectorAll(".chips button").forEach(b=>b.onclick=()=>{inp.value=b.textContent;send()});
+
+/* Send button runs away (max 5 times per message; Enter always works) */
+sendBtn.addEventListener("pointerenter",e=>{
+  if(BORING||e.pointerType!=="mouse"||dodges>=5)return;
+  dodges++;sfx.boing();
+  sendBtn.style.transform=`translate(${rnd(-180,60)}px,${rnd(-120,40)}px) rotate(${rnd(-25,25)}deg)`;
+  if(dodges===5)toast("Fine. You win this round.");
+});
+sendBtn.onclick=send;
+inp.addEventListener("keydown",e=>{if(e.key==="Enter")send()});
+/* Occasionally swaps the last two letters you type */
+inp.addEventListener("input",e=>{
+  if(BORING||e.inputType!=="insertText"||inp.value.length<4||Math.random()>.07)return;
+  const v=inp.value;inp.value=v.slice(0,-2)+v[v.length-1]+v[v.length-2];
+});
+
+function rain(){
+  const st=document.createElement("style");
+  st.textContent="@keyframes fall{to{transform:translateY(110vh) rotate(360deg)}}";document.head.append(st);
+  for(let i=0;i<30;i++){
+    const s=document.createElement("span");
+    s.textContent=pick(["🐟","💖","🐾","⭐"]);
+    s.style.cssText=`position:fixed;top:-40px;left:${rnd(0,100)}vw;font-size:28px;z-index:95;pointer-events:none;animation:fall 2.6s linear ${rnd(0,1.5)}s forwards`;
+    document.body.append(s);setTimeout(()=>s.remove(),4500);
+  }
+}
+</script>
+</body>
+</html>
